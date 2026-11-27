@@ -36,6 +36,27 @@ public class DoctorController {
         return saved;
     }
 
+    @PostMapping("/register")
+    public Doctor register(@AuthenticationPrincipal Jwt jwt,
+                           @RequestBody(required = false) Doctor body) {
+        String username = jwt.getClaimAsString("preferred_username");
+        if (username == null || username.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "В токене нет логина (preferred_username)");
+        }
+        Optional<Doctor> existing = repository.findByUsernameIgnoreCase(username);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+        Doctor doctor = new Doctor();
+        doctor.setUsername(username);
+        doctor.setName(body != null && body.getName() != null ? body.getName() : username);
+        doctor.setSpecialty(body != null && body.getSpecialty() != null ? body.getSpecialty() : "Врач");
+        Doctor saved = repository.save(doctor);
+        log.info("Создан профиль врача: id={}, username={}", saved.getId(), username);
+        return saved;
+    }
+
     @GetMapping("/me")
     public Doctor me(@AuthenticationPrincipal Jwt jwt) {
         String username = jwt.getClaimAsString("preferred_username");

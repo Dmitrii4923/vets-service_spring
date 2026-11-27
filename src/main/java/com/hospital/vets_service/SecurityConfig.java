@@ -28,6 +28,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/vets/register").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/vets/me").hasRole("DOCTOR")
                 .requestMatchers(HttpMethod.GET, "/api/vets/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/vets").hasRole("ADMIN")
